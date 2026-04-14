@@ -1,0 +1,14 @@
+{
+  "notificationPriority": 1,
+  "channels": ["sms"],
+  "recipient": {
+    "userId": "1"
+  },
+  "content": {
+    "usingTemplates": true,
+    "templateName": "Trending Nearby",
+    "placeholders": {
+      "name": "Lam"
+    }
+  }
+}
