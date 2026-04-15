@@ -2,60 +2,49 @@ package com.puneetchhabra.EmailConsumer.service;
 
 import com.puneetchhabra.EmailConsumer.models.EmailRequest;
 import com.puneetchhabra.EmailConsumer.models.SendEmailResponse;
-import com.sendgrid.Method;
-import com.sendgrid.Request;
-import com.sendgrid.Response;
-import com.sendgrid.SendGrid;
-import com.sendgrid.helpers.mail.Mail;
-import com.sendgrid.helpers.mail.objects.Attachments;
-import com.sendgrid.helpers.mail.objects.Content;
-import com.sendgrid.helpers.mail.objects.Email;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
 public class EmailService {
-    private String SENDGRID_API_KEY = "";
 
+    @Autowired
+    private JavaMailSender mailSender;
 
-    public SendEmailResponse sendEmail(EmailRequest emailRequest){
+    @Value("${spring.mail.username}")
+    private String senderEmail;
 
-        Email from = new Email("sender_email");
-        String subject = emailRequest.getEmailSubject()+" | Scalable Notification System";
-        Email to = new Email(emailRequest.getEmailId());
-        Content content = new Content("text/plain", emailRequest.getMessage());
-        Mail mail = new Mail(from, subject, to, content);
+    public SendEmailResponse sendEmail(EmailRequest emailRequest) {
+        log.info("Bắt đầu gửi email tới: {}", emailRequest.getEmailId());
 
-        if(emailRequest.getEmailAttachments().length != 0){
-            //Add attachments from respective links
-            // OUT OF SCOPE OF THIS PROJECT
-
-            //Sample attachment here
-            Attachments attachments2 = new Attachments();
-            attachments2.setContent("BwdW");
-            attachments2.setType("image/png");
-            attachments2.setFilename("banner.png");
-            attachments2.setDisposition("inline");
-            attachments2.setContentId("Banner");
-            mail.addAttachments(attachments2);
-        }
-
-        SendGrid sg = new SendGrid(SENDGRID_API_KEY);
-        Request request = new Request();
         try {
-            request.setMethod(Method.POST);
-            request.setEndpoint("mail/send");
-            request.setBody(mail.build());
-            Response response = sg.api(request);
-            log.info("Email Request (Notification Id: {}). Response from SendGrid: \n Status Code: {}, Body: {}, Headers: {}",emailRequest.getNotificationId(),response.getStatusCode(),response.getBody(),response.getHeaders());
-            return new SendEmailResponse(response.getStatusCode(), response.getBody());
-        } catch (IOException ex) {
-            log.error("Something went wrong with SendGrid. Exception: {}",ex.toString());
-            return new SendEmailResponse(500, "IO Exception occurred in Email Service-SendGrid");
-        }
+            SimpleMailMessage mailMessage = new SimpleMailMessage();
+            mailMessage.setFrom(senderEmail);
+            mailMessage.setTo(emailRequest.getEmailId());
+            mailMessage.setSubject(emailRequest.getEmailSubject());
+            mailMessage.setText(emailRequest.getMessage());
 
+            mailSender.send(mailMessage);
+
+            log.info("Gửi email thành công tới: {}", emailRequest.getEmailId());
+
+            return SendEmailResponse.builder()
+                    .status(200) // Trả về 200 cho thành công
+                    .message("Email sent successfully to " + emailRequest.getEmailId())
+                    .build();
+
+        } catch (Exception e) {
+            log.error("Lỗi khi gửi mail qua Gmail: {}", e.getMessage());
+
+            return SendEmailResponse.builder()
+                    .status(500) // Trả về 500 khi có lỗi
+                    .message("Failed to send email: " + e.getMessage())
+                    .build();
+        }
     }
 }

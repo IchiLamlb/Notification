@@ -2,7 +2,6 @@ package com.puneetchhabra.NotificationProcessorPriority1.models.db;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -10,12 +9,16 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Template {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
+
+    // BỔ SUNG: Tiêu đề mẫu cho Email
+    private String subject;
 
     @Column(columnDefinition = "TEXT")
     private String content;
@@ -32,6 +35,3 @@ public class Template {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 }
-
-
-

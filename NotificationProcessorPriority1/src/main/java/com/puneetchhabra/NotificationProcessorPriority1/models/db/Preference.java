@@ -25,9 +25,10 @@ public class Preference {
     @Enumerated(EnumType.STRING)
     private Channel channel;
 
+    @Column(name = "is_enabled", nullable = false)
     private boolean isEnabled = true;
 
-    @Column(columnDefinition = "JSON")
+    @Column(name = "allowed_priorities", columnDefinition = "JSON")
     private String allowedMessagesPriority;
 
     @Column(columnDefinition = "JSON")

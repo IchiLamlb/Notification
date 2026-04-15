@@ -50,7 +50,7 @@ public class NotificationHelperService {
 
         //Channel enabled, check priority enabled
         try {
-            ArrayList<Integer> allowedPriority = objectMapper.readValue(channelPreference.getAllowedMessagesPriority(),ArrayList.class);
+            ArrayList<Integer> allowedPriority = objectMapper.readValue(channelPreference.getAllowedMessagesPriority(), ArrayList.class);
             if(!allowedPriority.contains(PRIORITY)) {
                 log.info("Preference: Priority {} is disabled for channel {}. Preference for userId {} and channel {} is: {}",PRIORITY,channel,userId,channel,channelPreference);
                 return false;
@@ -101,7 +101,13 @@ public class NotificationHelperService {
     }
 
     public String getEmailHash(EmailRequest emailRequest, Long userId) {
-        String text = PRIORITY+"&"+emailRequest.getEmailSubject()+"&"+emailRequest.getMessage()+"&"+ Arrays.toString(emailRequest.getEmailAttachments())+"&"+userId.toString();
+        // Thêm System.currentTimeMillis() để đảm bảo mã Hash luôn luôn khác nhau mỗi lần gửi
+        String text = PRIORITY + "&" +
+                emailRequest.getEmailSubject() + "&" +
+                emailRequest.getMessage() + "&" +
+                userId.toString() + "&" +
+                System.currentTimeMillis();
+
         return DigestUtils.sha256Hex(text);
     }
 }

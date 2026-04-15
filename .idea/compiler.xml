@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="NotificationProcessorPriority3" />
+        <module name="notificationservice" />
+        <module name="NotificationProcessorPriority1" />
+        <module name="EmailConsumer" />
+        <module name="NotificationProcessorPriority2" />
+      </profile>
+      <profile name="Annotation profile for SMSConsumer" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
+        </processorPath>
+        <module name="SMSConsumer" />
+        <module name="PushNConsumer" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="EmailConsumer" options="-parameters" />
+      <module name="NotificationProcessorPriority1" options="-parameters" />
+      <module name="NotificationProcessorPriority2" options="-parameters" />
+      <module name="NotificationProcessorPriority3" options="-parameters" />
+      <module name="PushNConsumer" options="-parameters" />
+      <module name="SMSConsumer" options="-parameters" />
+      <module name="notificationservice" options="-parameters" />
+    </option>
+  </component>
+</project>

@@ -32,10 +32,12 @@ public class Notification {
     @Column(columnDefinition = "TEXT")
     private String message;
 
+    // Chỉ định rõ tên cột trong DB
     @Column(name = "request_content", columnDefinition = "JSON")
     private String requestContent;
 
-    @Column(length = 128, unique = true)
+    // Khớp với tên cột message_hash trong script SQL của bạn
+    @Column(name = "message_hash", length = 128)
     private String notificationHash;
 
     @Column(name = "created_at", updatable = false)
@@ -44,6 +46,7 @@ public class Notification {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
+    // Constructor để code Processor gọi không bị lỗi
     public Notification(User user, Channel channel, String message, String requestContent, String notificationHash){
         this.user = user;
         this.channel = channel;
@@ -52,4 +55,3 @@ public class Notification {
         this.notificationHash = notificationHash;
     }
 }
-

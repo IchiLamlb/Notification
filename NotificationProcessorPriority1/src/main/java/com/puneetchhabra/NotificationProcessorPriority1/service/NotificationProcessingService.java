@@ -88,36 +88,65 @@ public class NotificationProcessingService {
 
     private void prepareMessageFromTemplate(NotificationRequest notificationRequest) {
         String templateName = notificationRequest.getContent().getTemplateName();
-        try{
+        try {
             Template usedTemplate = templateRepository.findByName(templateName)
-                    .orElseThrow(() -> {
-                        log.error("Template with name: " + templateName + " Not found");
-                        return new TemplateNotFoundException("Template with name: " + templateName + " Not found");
-                    });
-            System.out.println("Used Template: "+usedTemplate.toString());
-            Map<String,String> placeholdersInRequest = notificationRequest.getContent().getPlaceholders();
-            String[] requiredPlaceholders = objectMapper.readValue(usedTemplate.getPlaceholders(),String[].class);
+                    .orElseThrow(() -> new TemplateNotFoundException("Template: " + templateName + " Not found"));
 
-            String updatedMessage = replacePlaceholdersInMessageContent(usedTemplate.getContent(),placeholdersInRequest,requiredPlaceholders);
+            Map<String, String> placeholdersInRequest = notificationRequest.getContent().getPlaceholders();
+            // Giả sử placeholders trong DB lưu dạng ["name", "otp"]
+            String[] requiredPlaceholders = objectMapper.readValue(usedTemplate.getPlaceholders(), String[].class);
+
+            // 1. Cập nhật Message (Nội dung)
+            String updatedMessage = replacePlaceholdersInMessageContent(usedTemplate.getContent(), placeholdersInRequest, requiredPlaceholders);
             notificationRequest.getContent().setMessage(updatedMessage);
-            System.out.println("Updated message: "+updatedMessage);
-        } catch (TemplateNotFoundException | PlaceholderNotFoundInRequestException e){
-            log.error(e+" For notificationRequest: "+notificationRequest);
-        } catch (JsonProcessingException e) {
-            log.error("Error parsing String placeholders to Json from usedTemplate. "+e+" For notificationRequest: "+notificationRequest);
+
+            // 2. CẬP NHẬT TIÊU ĐỀ (SUBJECT) - Quan trọng để không bị null tiêu đề
+            if (usedTemplate.getSubject() != null) {
+                String updatedSubject = replacePlaceholdersInMessageContent(usedTemplate.getSubject(), placeholdersInRequest, requiredPlaceholders);
+                notificationRequest.getContent().setEmailSubject(updatedSubject);
+            }
+
+        } catch (Exception e) {
+            log.error("Lỗi khi chuẩn bị message từ template: {}", e.getMessage());
         }
     }
 
-    private String replacePlaceholdersInMessageContent(String content, Map<String, String> placeholdersInRequest, String[] requiredPlaceholders) throws PlaceholderNotFoundInRequestException {
-        for(String s: requiredPlaceholders){ //check all req. placeholders exist in request
-            if(!placeholdersInRequest.containsKey(s)){
-                throw new PlaceholderNotFoundInRequestException("Value for "+s+" not found in the request for using content template");
-            }
-        }
-        for(String s: requiredPlaceholders){
-            content = content.replace("{"+s+"}",placeholdersInRequest.get(s));
+    private String replacePlaceholdersInMessageContent(String content, Map<String, String> placeholdersInRequest, String[] requiredPlaceholders) {
+        if (content == null) return "";
+        for (String s : requiredPlaceholders) {
+            String value = placeholdersInRequest.getOrDefault(s, "");
+            // Sửa lại để hỗ trợ cả {name} và ${name} cho chắc chắn
+            content = content.replace("{" + s + "}", value);
+            content = content.replace("${" + s + "}", value);
         }
         return content;
+    }
+
+    // Trong module NotificationProcessorPriority1
+    private void prepareAndSendEmailNotification(NotificationRequest notificationRequest, String email, User user) {
+        Content content = notificationRequest.getContent();
+
+        // Mapping dữ liệu sang EmailRequest để gửi cho EmailConsumer
+        EmailRequest emailRequest = new EmailRequest();
+        emailRequest.setEmailId(email); // Lấy email từ đối tượng User trong DB
+        emailRequest.setMessage(content.getMessage());
+
+        // Xử lý tiêu đề: Nếu content chưa có subject, lấy từ DB Template hoặc để mặc định
+        String subject = content.getEmailSubject();
+        if (subject == null || subject.isEmpty()) {
+            subject = "Welcome to Our Service"; // Hoặc lấy từ Template
+        }
+        emailRequest.setEmailSubject(subject);
+
+        // Gán ID để đồng bộ
+        emailRequest.setNotificationId(notificationRequest.getNotificationId());
+
+        try {
+            sendNotificationService.sendEmailRequest(emailRequest, user);
+            log.info("Đã chuyển tiếp thông báo ID {} tới Kafka Email Topic", notificationRequest.getNotificationId());
+        } catch (DuplicateNotificationFoundException e) {
+            log.error("Thông báo trùng lặp: {}", e.getMessage());
+        }
     }
 
     private void prepareAndSendPushNotification(NotificationRequest notificationRequest, User user) {
@@ -140,16 +169,6 @@ public class NotificationProcessingService {
         }
     }
 
-    private void prepareAndSendEmailNotification(NotificationRequest notificationRequest, String email, User user) {
-        Content content = notificationRequest.getContent();
-
-        EmailRequest emailRequest = new EmailRequest(email,content.getMessage(),content.getEmailSubject(),content.getEmailAttachments());
-        try{
-            sendNotificationService.sendEmailRequest(emailRequest,user);
-        } catch (DuplicateNotificationFoundException duplicateNotificationFoundException){
-            log.error("Duplicate Email Request. "+duplicateNotificationFoundException.toString());
-        }
-    }
 
     private ArrayList<Channel> getChannels(String[] channels) {
         ArrayList<Channel> channelList = new ArrayList<>();

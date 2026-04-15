@@ -38,16 +38,18 @@ public class NotificationProcessingService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Bad priority request.");
         }
 
-        List<String> channels = Arrays.asList(notificationRequest.getChannels());
+        // 2. Kiểm tra Channels (SỬA LỖI NULL TẠI ĐÂY)
+        if (notificationRequest.getChannels() == null || notificationRequest.getChannels().length == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Trường 'channels' không được để trống (Ví dụ: [\"EMAIL\"])");
+        }
 
-        boolean valid = channels.stream().anyMatch(c ->
-                c.equalsIgnoreCase("sms") ||
-                        c.equalsIgnoreCase("push") ||
-                        c.equalsIgnoreCase("email")
+        List<String> channels = Arrays.asList(notificationRequest.getChannels());
+        boolean hasValidChannel = channels.stream().anyMatch(c ->
+                c.equalsIgnoreCase("sms") || c.equalsIgnoreCase("push") || c.equalsIgnoreCase("email")
         );
 
-        if (!valid) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad channels request");
+        if (!hasValidChannel) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Channel không hợp lệ. Chỉ chấp nhận: sms, email, push.");
         }
 
         Recipient recipient = notificationRequest.getRecipient();

@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class SmsService {
-    public final String ACCOUNT_SID = "AC89a82d2d5b84e3cace1ead8bbda98635";
-    public final String AUTH_TOKEN = "914a8cf98e63563d91e88ceda21de051";
+    public final String ACCOUNT_SID = "";
+    public final String AUTH_TOKEN = "";
 
     public SendSmsResponse sendSms(SmsRequest smsRequest){
 
