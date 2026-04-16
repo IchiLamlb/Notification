@@ -54,6 +54,12 @@ services:
         - "8081:8081"
       depends_on:
         - redis
-
+#  email-consumer:
+#    image: email-consumer:latest
+#    env_file:
+#      - .env  # Tự động nạp GMAIL_USERNAME và GMAIL_APP_PASSWORD vào container
+#    environment:
+#      - SPRING_MAIL_USERNAME=${GMAIL_USERNAME}
+#      - SPRING_MAIL_PASSWORD=${GMAIL_APP_PASSWORD}
 volumes:
     redis_data:
