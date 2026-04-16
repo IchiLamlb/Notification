@@ -91,7 +91,18 @@ public class NotificationHelperService {
     }
 
     public String getPushNHash(PushNRequest pushNRequest, Long userId) {
-        String text = PRIORITY+"&"+pushNRequest.getTitle()+"&"+pushNRequest.getMessage()+"&"+pushNRequest.getAction()+"&"+userId.toString();
+        String title = pushNRequest.getTitle() != null ? pushNRequest.getTitle() : "";
+        String body = pushNRequest.getBody() != null ? pushNRequest.getBody() : "";
+        String action = pushNRequest.getActionUrl() != null ? pushNRequest.getActionUrl() : "";
+
+        // Thêm System.currentTimeMillis() để mã Hash luôn thay đổi mỗi lần nhấn Send
+        String text = PRIORITY + "&" +
+                title + "&" +
+                body + "&" +
+                action + "&" +
+                userId.toString() + "&" +
+                System.currentTimeMillis();
+
         return DigestUtils.sha256Hex(text);
     }
 

@@ -5,17 +5,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class PushNRequest {
-    private String title;
-    private String message;
-    private String action;
+    // Trường này cực kỳ quan trọng để xử lý DB trong PushNProcessingService
     private Long notificationId;
 
-    public PushNRequest(String title, String message, String action){
-        this.title = title;
-        this.message = message;
-        this.action = action;
-    }
+    // Token thiết bị Android (lấy từ máy ảo)
+    private String recipientToken;
+
+    // Các trường dữ liệu phục vụ hiển thị trên điện thoại
+    private String title;
+    private String body;
 }

@@ -148,12 +148,35 @@ public class NotificationProcessingService {
 
     private void prepareAndSendPushNotification(NotificationRequest notificationRequest, User user) {
         Content content = notificationRequest.getContent();
-        PushNotification pushNotification = content.getPushNotification();
-        PushNRequest pushNRequest = new PushNRequest(pushNotification.getTitle(),content.getMessage(),pushNotification.getAction().getUrl());
-        try{
+        PushNotification pushContent = content.getPushNotification();
+
+        // 1. Xử lý an toàn Title và Body (Lấy từ Template nếu PushNotification null)
+        String title = (pushContent != null && pushContent.getTitle() != null)
+                ? pushContent.getTitle() : "Thông báo mới";
+        String body = content.getMessage(); // Message đã được render từ template ở hàm trên
+
+        // 2. Xử lý an toàn Action URL
+        String actionUrl = "";
+        if (pushContent != null && pushContent.getAction() != null) {
+            actionUrl = pushContent.getAction().getUrl();
+        }
+
+        // 3. Khởi tạo Request và GÁN ĐẦY ĐỦ CÁC TRƯỜNG
+        PushNRequest pushNRequest = new PushNRequest();
+        pushNRequest.setNotificationId(notificationRequest.getNotificationId()); // Sửa lỗi ID null
+        pushNRequest.setRecipientToken(notificationRequest.getRecipient().getFcmToken()); // Gửi token sang Consumer
+        pushNRequest.setTitle(title);
+        pushNRequest.setBody(body);
+        // Nếu PushNRequest của bạn có trường actionUrl, hãy gán nó:
+        // pushNRequest.setActionUrl(actionUrl);
+
+        try {
+            log.info("Đang chuyển tiếp Push Notification ID: {} tới Kafka", notificationRequest.getNotificationId());
             sendNotificationService.sendPushNRequest(pushNRequest, user);
-        } catch (DuplicateNotificationFoundException duplicateNotificationFoundException){
-            log.error("Duplicate Push Notification Request. "+duplicateNotificationFoundException.toString());
+        } catch (DuplicateNotificationFoundException e) {
+            log.error("Thông báo Push bị trùng lặp (Idempotency chặn): {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("Lỗi không xác định khi gửi Push: {}", e.getMessage());
         }
     }
 

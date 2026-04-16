@@ -24,7 +24,7 @@ import static com.ichilamlb.NotificationProcessorPriority3.constants.Constants.P
 public class NotificationHelperService {
     PreferenceRepository preferenceRepository;
     ObjectMapper objectMapper;
-    
+
     public NotificationHelperService(PreferenceRepository preferenceRepository, ObjectMapper objectMapper){
         this.preferenceRepository = preferenceRepository;
         this.objectMapper = objectMapper;
@@ -35,9 +35,9 @@ public class NotificationHelperService {
                     log.error(channel+" preference not found for userId: {}",userId);
                     return new PreferenceNotFoundException(channel+" preference not found for userId: " + userId);
                 });
-        
+
         log.info("Preference for userId {} and channel {} is: {}",userId,channel,channelPreference);
-        
+
         if(!channelPreference.isEnabled()) {
             log.info("Preference: Channel is disabled. Preference for userId {} and channel {} is: {}",userId,channel,channelPreference);
             return false;
@@ -91,7 +91,18 @@ public class NotificationHelperService {
     }
 
     public String getPushNHash(PushNRequest pushNRequest, Long userId) {
-        String text = PRIORITY+"&"+pushNRequest.getTitle()+"&"+pushNRequest.getMessage()+"&"+pushNRequest.getAction()+"&"+userId.toString();
+        String title = pushNRequest.getTitle() != null ? pushNRequest.getTitle() : "";
+        String body = pushNRequest.getBody() != null ? pushNRequest.getBody() : "";
+        String action = pushNRequest.getActionUrl() != null ? pushNRequest.getActionUrl() : "";
+
+        // Thêm System.currentTimeMillis() để mã Hash luôn thay đổi mỗi lần nhấn Send
+        String text = PRIORITY + "&" +
+                title + "&" +
+                body + "&" +
+                action + "&" +
+                userId.toString() + "&" +
+                System.currentTimeMillis();
+
         return DigestUtils.sha256Hex(text);
     }
 
@@ -106,3 +117,4 @@ public class NotificationHelperService {
         return DigestUtils.sha256Hex(text);
     }
 }
+

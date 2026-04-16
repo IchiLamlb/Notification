@@ -1,5 +1,6 @@
 package com.ichilamlb.NotificationProcessorPriority1.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class NotificationRequest {
     // BỔ SUNG: ID để theo dõi thông báo xuyên suốt hệ thống
     private long notificationId;

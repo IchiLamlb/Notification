@@ -5,17 +5,19 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class PushNRequest {
     private String title;
-    private String message;
-    private String action;
-    private Long notificationId;
+    private String body;           // THÊM TRƯỜNG NÀY
+    private String actionUrl;
+    private Long notificationId;   // THÊM TRƯỜNG NÀY
+    private String recipientToken; // THÊM TRƯỜNG NÀY
 
-    public PushNRequest(String title, String message, String action){
+    // Constructor cũ nếu bạn muốn giữ tương thích (tùy chọn)
+    public PushNRequest(String title, String body, String actionUrl) {
         this.title = title;
-        this.message = message;
-        this.action = action;
+        this.body = body;
+        this.actionUrl = actionUrl;
     }
 }

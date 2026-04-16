@@ -73,7 +73,7 @@ public class PushNProcessingService {
             return sendPushNResponse;
         } else {
             log.error("Failed to send PushNRequest {}. Message: {}",pushNRequest.toString(), sendPushNResponse.getMessage());
-            sendPushNResponse.setMessage("Something went wrong with SendGrid.");
+            sendPushNResponse.setMessage("Something went wrong with FCM (Firebase).");
             return sendPushNResponse;
         }
     }

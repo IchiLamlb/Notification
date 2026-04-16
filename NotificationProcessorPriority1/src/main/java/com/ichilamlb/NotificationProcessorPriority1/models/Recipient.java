@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 public class Recipient {
     private String userId;
     private String userEmail;
-
+    private String fcmToken;
 }

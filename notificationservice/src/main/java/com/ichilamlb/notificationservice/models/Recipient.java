@@ -10,5 +10,5 @@ import lombok.extern.slf4j.Slf4j;
 public class Recipient {
     private String userId;
     private String userEmail;
-
+    private String fcmToken;
 }

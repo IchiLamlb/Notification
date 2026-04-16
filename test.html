@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FCM Token Getter</title>
+</head>
+<body>
+<h1>Lấy Token FCM chính chủ</h1>
+<button onclick="getToken()">Nhấn để lấy Token</button>
+<p id="token" style="word-break: break-all; color: blue;"></p>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getMessaging, getToken as fcmGetToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
+
+    // Cấu hình này lấy từ Firebase Console -> Project Settings -> General
+    const firebaseConfig = {
+        apiKey: "AIzaSyDFBMJ3jLDz38MMKTfmIUDmu0TNbx7wUo0",
+        authDomain: "noti-8532b.firebaseapp.com",
+        projectId: "noti-8532b",
+        storageBucket: "noti-8532b.firebasestorage.app",
+        messagingSenderId: "548079551425",
+        appId: "1:548079551425:web:fe9bebbe0b8be1dd8b6540",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const messaging = getMessaging(app);
+
+    window.getToken = async () => {
+        try {
+            const currentToken = await fcmGetToken(messaging, {
+                vapidKey: 'BPNNRUX_5WRh1ho4K-q7aeEJVRfiNerzxZGvPS455nhIpNC72NBqWi8jSKMmQ_-GLwwHDuYvvKbcml1mpu49P3A'
+            });
+            if (currentToken) {
+                document.getElementById('token').innerText = currentToken;
+                console.log("Token của bạn:", currentToken);
+            } else {
+                alert("Không lấy được token. Hãy kiểm tra quyền thông báo.");
+            }
+        } catch (err) {
+            console.log('Lỗi:', err);
+        }
+    };
+</script>
+</body>
+</html>

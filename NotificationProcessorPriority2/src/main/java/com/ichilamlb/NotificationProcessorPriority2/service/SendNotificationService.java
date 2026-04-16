@@ -31,7 +31,7 @@ public class SendNotificationService {
     NotificationHelperService notificationHelperService;
 
 
-    
+
     public SendNotificationService(KafkaTemplate<String, String> kafkaTemplate,
                                    NotificationRepository notificationRepository, DeliveryLogRepository deliveryLogRepository,
                                    ObjectMapper objectMapper, NotificationHelperService notificationHelperService){
@@ -83,15 +83,39 @@ public class SendNotificationService {
 
     public void sendPushNRequest(PushNRequest pushNRequest, User user) {
         Notification notification = null;
-        try{
-            notification = notificationRepository.save(new Notification(user, Channel.push, pushNRequest.getTitle() + pushNRequest.getMessage(), objectMapper.writeValueAsString(pushNRequest),notificationHelperService.getPushNHash(pushNRequest, user.getId())));
+        try {
+            // 1. Tạo nội dung tóm tắt để lưu vào DB (title + body)
+            String summaryContent = pushNRequest.getTitle() + " " + pushNRequest.getBody();
+
+            // 2. Chuyển object request thành JSON String để lưu vào cột content trong DB
+            String jsonContent = objectMapper.writeValueAsString(pushNRequest);
+
+            // 3. Lấy mã Hash để chống gửi trùng (Idempotency)
+            String hashCode = notificationHelperService.getPushNHash(pushNRequest, user.getId());
+
+            // 4. Lưu vào bảng notifications
+            notification = notificationRepository.save(new Notification(
+                    user,
+                    Channel.push,
+                    summaryContent,
+                    jsonContent,
+                    hashCode
+            ));
+
+            // 5. QUAN TRỌNG: Gán ID vừa sinh ra từ DB ngược lại cho request để gửi sang Kafka
             pushNRequest.setNotificationId(notification.getId());
-        }catch (JsonProcessingException e){
-            log.error("Exception parsing requestContent to String: {}", e.toString());
-        } catch (Exception e){
-            if(e.toString().contains("Duplicate entry")){
-                throw new DuplicateNotificationFoundException("Duplicate notification request. "+pushNRequest.toString());
+
+            // 6. Gửi vào Kafka Topic dành cho Push
+            // kafkaTemplate.send(Constants.PUSH_TOPIC, pushNRequest);
+            log.info("Notification saved and ID assigned: {}", notification.getId());
+
+        } catch (JsonProcessingException e) {
+            log.error("Lỗi parse JSON: {}", e.getMessage());
+        } catch (Exception e) {
+            if (e.toString().contains("Duplicate entry")) {
+                throw new DuplicateNotificationFoundException("Thông báo trùng lặp: " + pushNRequest.toString());
             } else {
+                log.error("Lỗi hệ thống khi lưu Notification: {}", e.getMessage());
                 throw e;
             }
         }
