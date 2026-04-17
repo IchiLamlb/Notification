@@ -1,34 +1,34 @@
 package com.ichilamlb.scheduler.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.ichilamlb.scheduler.models.NotificationRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Service
+@Slf4j
 public class KafkaProducerService {
-    private static final Logger logger = LoggerFactory.getLogger(KafkaProducerService.class);
 
-    @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaTemplate<String, NotificationRequest> kafkaTemplate;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    public KafkaProducerService(KafkaTemplate<String, NotificationRequest> kafkaTemplate) {
+        this.kafkaTemplate = kafkaTemplate;
+    }
 
-    public void sendMessage(String topic, Object payload) {
+    public void sendToNotificationTopic(NotificationRequest request) {
         try {
-            // Chuyển Object thành chuỗi JSON thuần túy
-            String jsonString = objectMapper.writeValueAsString(payload);
+            Message<NotificationRequest> message = MessageBuilder
+                    .withPayload(request)
+                    .setHeader(KafkaHeaders.TOPIC, "priority-3")
+                    .build();
 
-            // Gửi vào Kafka
-            kafkaTemplate.send(topic, jsonString);
-
-            logger.info("Đã đẩy tin vào Topic [{}]: {}", topic, jsonString);
-        } catch (JsonProcessingException e) {
-            logger.error("Lỗi parse JSON khi gửi tới Kafka: {}", e.getMessage());
+            kafkaTemplate.send(message);
+            log.debug("Sent NotificationRequest ID: {} to Kafka", request.getNotificationId());
+        } catch (Exception e) {
+            log.error("Error sending to Kafka: ", e);
         }
     }
 }

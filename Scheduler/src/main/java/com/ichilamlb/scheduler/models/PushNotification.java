@@ -1,5 +1,6 @@
-package com.ichilamlb.notificationservice.models;
+package com.ichilamlb.scheduler.models;
 
+import com.ichilamlb.scheduler.models.Action;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,4 +11,5 @@ public class PushNotification {
     private String title;
     private Action action;
     private String body;
-}
+    }
+

@@ -1,18 +1,17 @@
 package com.ichilamlb.scheduler.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class JsonConfig {
+public class AppConfig {
 
+    /**
+     * Khởi tạo và cung cấp ObjectMapper Bean cho toàn bộ hệ thống (Application Context)
+     */
     @Bean
     public ObjectMapper objectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        // Hỗ trợ Java 8 Date/Time (LocalDateTime) nếu cần
-        mapper.registerModule(new JavaTimeModule());
-        return mapper;
+        return new ObjectMapper();
     }
 }

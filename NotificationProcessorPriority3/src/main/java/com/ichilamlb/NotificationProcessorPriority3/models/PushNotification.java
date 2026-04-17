@@ -9,4 +9,5 @@ import lombok.NoArgsConstructor;
 public class PushNotification {
     private String title;
     private Action action;
+    private String body;
 }
