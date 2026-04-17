@@ -1,0 +1,25 @@
+{
+  "notificationPriority": 3,
+  "channels": ["push"],
+  "recipient": {
+    "userId": "1",
+    "userEmail": "test@example.com"
+  },
+  "content": {
+    "usingTemplates": true,
+    "templateName": "Trending Nearby",
+    "placeholders": {
+      "name": "Lam",
+      "location": "Hanoi"
+    },
+    "message": null,
+    "emailSubject": null,
+    "emailAttachments": [],
+    "pushNotification": {
+      "title": "Trending Now",
+      "action": {
+        "url": "https://example.com"
+      }
+    }
+  }
+}
